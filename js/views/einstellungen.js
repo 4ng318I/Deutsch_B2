@@ -48,7 +48,7 @@ export function einstellungenView(root) {
       h('div', { class: 'row' },
         h('button', { class: 'btn', onclick: () => {
           const a = h('a', { href: URL.createObjectURL(new Blob([exportJSON()], { type: 'application/json' })),
-            download: `satzbau-b2-fortschritt-${today()}.json` });
+            download: `deutschb2-fortschritt-${today()}.json` });
           document.body.append(a); a.click(); a.remove();
           setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         } }, 'Exportieren'),
