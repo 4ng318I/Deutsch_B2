@@ -17,6 +17,17 @@ sys.stdout.reconfigure(encoding="utf-8")
 fails = []
 
 
+def _watchdog():
+    print("FEHLER Zeitüberschreitung: Test hängt (über 7 Minuten)", flush=True)
+    import os
+    os._exit(2)
+
+
+_wd = threading.Timer(420, _watchdog)
+_wd.daemon = True
+_wd.start()
+
+
 def check(cond, msg):
     print(("OK    " if cond else "FEHLER"), msg)
     if not cond:
@@ -24,8 +35,21 @@ def check(cond, msg):
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
+    bump = False  # True: sw.js wird verändert ausgeliefert → simuliert eine neue Version
+
     def log_message(self, *a):
         pass
+
+    def do_GET(self):
+        if Quiet.bump and self.path.split("?")[0].endswith("/sw.js"):
+            body = (ROOT / "sw.js").read_bytes() + b"\n// neue Version (Test)\n"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/javascript")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        super().do_GET()
 
 
 def serve():
@@ -98,12 +122,55 @@ with sync_playwright() as p:
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.on("console", lambda m: m.type == "error" and errors.append(m.text))
 
+    # Gemeinsamer Ursprung simulieren: Daten einer fremden App + Fortschritt unter dem alten Schlüssel
+    page.goto(base + "README.md")
+    page.evaluate("""async () => {
+        localStorage.setItem('progress', 'DATEN-VON-ANA');
+        localStorage.setItem('ana:settings', '{"x":1}');
+        localStorage.setItem('satzbau-b2', JSON.stringify({ v: 1, settings: { runde: 10 },
+            items: { 'anf-01:satzbau': { box: 2, n: 3, ok: 2, last: '2026-11-01' } }, anrufe: {}, tage: {} }));
+        await (await caches.open('ana-english-v1')).put('/ana.txt', new Response('ana'));
+    }""")
+
     page.goto(base)
     page.wait_for_selector("text=Was möchtest du üben?")
     page.evaluate("navigator.serviceWorker.ready")
     page.reload()
     page.wait_for_selector("text=Was möchtest du üben?")
     check(page.evaluate("!!navigator.serviceWorker.controller"), "Service Worker kontrolliert die Seite")
+    st = page.evaluate("""async () => ({
+        neu: JSON.parse(localStorage.getItem('deutschb2:progress') || 'null'),
+        alt: localStorage.getItem('satzbau-b2'),
+        backup: localStorage.getItem('deutschb2:backup-schema-1') !== null,
+        ana: [localStorage.getItem('progress'), localStorage.getItem('ana:settings')],
+        caches: await caches.keys() })""")
+    check(st["neu"] and "anf-01:satzbau" in st["neu"]["items"] and st["alt"] is None and st["backup"],
+          "Alter Schlüssel 'satzbau-b2' → 'deutschb2:progress' übernommen, Sicherung angelegt")
+    check(st["ana"] == ["DATEN-VON-ANA", '{"x":1}'], "Daten der anderen App im selben Ursprung unberührt")
+    check("ana-english-v1" in st["caches"] and any(c.startswith("deutschb2-") for c in st["caches"]),
+          f"Fremder Cache bleibt erhalten, eigener Cache mit Präfix {st['caches']}")
+
+    mig = page.evaluate("""async () => {
+        const m = await import('/js/store.js');
+        const out = {};
+        // Migrationskette mit erfundenen Schritten 0→1 testen
+        const s = m.migrate({ v: 0, punkte: { 'anf-01:satzbau': 5 } }, {
+            0: s => ({ v: 1, items: { 'anf-01:satzbau': { box: 0, n: s.punkte['anf-01:satzbau'], ok: 0, last: '' } } }) });
+        out.kette = s.v === 1 && s.items['anf-01:satzbau'].n === 5 && s.settings.runde === 10 && typeof s.tage === 'object';
+        try { m.migrate({ v: 99, items: {} }); out.zukunft = false; } catch (e) { out.zukunft = !!e.zukunft; }
+        try { m.unwrap({ app: 'ana-english', progress: {} }); out.fremd = false; } catch { out.fremd = true; }
+        const env = JSON.parse(m.exportJSON());
+        out.huelle = env.app === 'deutschb2' && env.schema === m.SCHEMA && env.progress.v === m.SCHEMA;
+        // Export der ersten Version: nur das progress-Objekt, ohne Hülle
+        m.importJSON(JSON.stringify({ v: 1, items: { 'ter-05:luecke': { box: 1, n: 1, ok: 1, last: '2026-11-02' } }, anrufe: {}, tage: {} }), 'zusammenfuehren');
+        out.altImport = !!m.S.items['ter-05:luecke'] && !!m.S.items['anf-01:satzbau'];
+        return out; }""")
+    check(mig["kette"], "Migration: Schritte werden der Reihe nach angewandt, fehlende Felder ergänzt")
+    check(mig["zukunft"], "Migration: Stand aus neuerer Version wird erkannt")
+    check(mig["fremd"], "Import: Datei einer anderen App wird abgelehnt")
+    check(mig["huelle"], "Export enthält App-Name und Schema-Version")
+    check(mig["altImport"], "Import: Export der ersten Version (ohne Hülle) wird angenommen")
+    page.evaluate("import('/js/store.js').then(m => m.resetAll())")
     check(page.evaluate("document.documentElement.dataset.theme") == "dark", "Dunkles Design als Standard")
 
     cdp = ctx.new_cdp_session(page)
@@ -201,6 +268,39 @@ with sync_playwright() as p:
     if SHOTS:
         page.screenshot(path=str(SHOTS / "tablet-start.png"), full_page=True)
     page.set_viewport_size({"width": 1280, "height": 860})
+
+    # Stand aus einer neueren App-Version: Hinweis zeigen, nichts überschreiben
+    saved = page.evaluate("localStorage.getItem('deutschb2:progress')")
+    zukunft = '{"v":99,"items":{},"irgendwas":"neu"}'
+    page.evaluate(f"localStorage.setItem('deutschb2:progress', {zukunft!r})")
+    page.goto(base + "#/ueben?typ=konnektor")
+    page.reload()
+    page.wait_for_selector(".opts button")
+    page.locator(".opts button").first.click()
+    check(page.locator("#notice", has_text="neueren Version").is_visible(), "Neuere Version: Hinweis wird angezeigt")
+    check(page.evaluate("localStorage.getItem('deutschb2:progress')") == zukunft, "Neuere Version: gespeicherter Stand bleibt unverändert")
+    page.evaluate(f"localStorage.setItem('deutschb2:progress', {saved!r})")
+    page.goto(base + "#/")
+    page.reload()
+    page.wait_for_selector(".card")
+
+    # Neue Version: Hinweis erscheint, Knopf aktiviert sie und lädt neu
+    Quiet.bump = True
+    page.evaluate("navigator.serviceWorker.getRegistration().then(r => r.update())")
+    page.wait_for_selector(".toast", timeout=15000)
+    check(page.locator(".toast", has_text="Neue Version verfügbar").count() == 1, "Update: Hinweis „Neue Version verfügbar“")
+    page.evaluate("window.__vorher = 1")
+    with page.expect_navigation():
+        page.locator(".toast button", has_text="Neu laden").click()
+    page.wait_for_selector(".card")
+    check(page.evaluate("window.__vorher === undefined && !!navigator.serviceWorker.controller"),
+          "Update: Knopf aktiviert die neue Version und lädt neu")
+    check(page.locator(".toast").count() == 0, "Update: nach dem Neuladen kein Hinweis mehr")
+
+    keys = page.evaluate("Object.keys(localStorage)")
+    fremd = {"progress", "ana:settings"}
+    check(all(k.startswith("deutschb2:") for k in keys if k not in fremd) and fremd <= set(keys),
+          f"Alle eigenen localStorage-Schlüssel mit Präfix deutschb2: {sorted(keys)}")
 
     # Offline: Server stoppen, neu laden
     srv.shutdown()
