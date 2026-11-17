@@ -14,7 +14,7 @@ const VIEWS = {
   '': startView, ueben: sessionView, anrufe: anrufeView, anruf: anrufView,
   nachschlagen: nachschlagenView, fortschritt: fortschrittView, einstellungen: einstellungenView
 };
-const NAV = [['', 'ueben'], ['anrufe', 'anrufe'], ['nachschlagen', 'nachschlagen'], ['fortschritt', 'fortschritt'], ['einstellungen', 'einstellungen']];
+const NAV = [['', 'ueben', '🎯'], ['anrufe', 'anrufe', '📞'], ['nachschlagen', 'nachschlagen', '📚'], ['fortschritt', 'fortschritt', '📈'], ['einstellungen', 'einstellungen', '⚙️']];
 const NAV_OF = { ueben: '', anruf: 'anrufe' };
 
 const root = document.getElementById('view');
@@ -29,9 +29,10 @@ function route() {
   document.querySelector('meta[name=theme-color]').content = S.settings.theme === 'light' ? '#f9f9f7' : '#0d0d0d';
   stopSpeaking();
   const active = name in NAV_OF ? NAV_OF[name] : (VIEWS[name] ? name : '');
-  nav.replaceChildren(...NAV.map(([id, key]) =>
-    h('a', { href: '#/' + id, class: id === active ? 'on' : '' }, T(key))));
+  nav.replaceChildren(...NAV.map(([id, key, emo]) =>
+    h('a', { href: '#/' + id, class: id === active ? 'on' : '' }, emo + ' ' + T(key))));
   root.replaceChildren();
+  root.className = '';
   view(root, arg, params);
   window.scrollTo(0, 0);
 }

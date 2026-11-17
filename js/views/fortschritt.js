@@ -43,14 +43,14 @@ const few = () => h('p', { class: 'muted small' }, `Noch zu wenig Daten (mindest
 
 export function fortschrittView(root) {
   const A = aggregate();
-  add(root, h('h1', {}, L('fortschritt')));
+  add(root, h('h1', {}, '📈 ', L('fortschritt')));
 
   // ---------- 1. Gemessen ----------
-  add(root, h('h2', {}, L('gemessen')),
+  add(root, h('h2', {}, '📏 ', L('gemessen')),
     h('p', { class: 'muted small' }, T('gemessen_hinweis')),
     h('div', { class: 'tiles' }, TYPEN.map(([t, color]) => {
       const a = A.typ[t];
-      return h('div', { class: 'card tile' },
+      return h('div', { class: 'card tile c-' + t },
         h('div', { class: 'lab' }, h('i', { class: 'dot', style: 'background:' + color }), T(t)),
         h('div', { class: 'big' }, a.n ? pct(a.ok, a.n) + ' %' : '–'),
         h('div', { class: 'muted small' }, `${a.ok} von ${a.n} Versuchen richtig`),
@@ -58,7 +58,7 @@ export function fortschrittView(root) {
     })));
 
   const dates = Object.keys(S.tage).filter(d => TYPEN.some(([t]) => S.tage[d][t])).sort().slice(-30);
-  add(root, h('h3', {}, 'Trefferquote pro Übungstag'));
+  add(root, h('h3', {}, '📊 Trefferquote pro Übungstag'));
   if (dates.length === 1) {
     add(root, h('p', { class: 'muted small' }, 'Ab dem zweiten Übungstag erscheint hier der Verlauf.'));
   } else if (dates.length) {
@@ -77,7 +77,7 @@ export function fortschrittView(root) {
             TYPEN.map(([t]) => { const v = S.tage[d][t]; return h('td', {}, v ? `${v[1]}/${v[0]}` : '–'); })))))));
   } else add(root, h('p', { class: 'muted small' }, 'Noch keine Übungstage.'));
 
-  add(root, h('h2', {}, L('schwachstellen')));
+  add(root, h('h2', {}, '🎯 ', L('schwachstellen')));
   const sections = [
     ['Nach Grammatikthema', weakest(A.gram, k => (gramById(k) || { titel: k }).titel)],
     ['Nach Konnektor', weakest(A.konn, k => k)],
@@ -90,7 +90,7 @@ export function fortschrittView(root) {
   add(root, h('p', { class: 'muted small' }, 'Sortiert von schwach nach stark. Gezeigt werden höchstens acht Einträge pro Liste.'));
 
   // ---------- 2. Selbst eingeschätzt ----------
-  add(root, h('h2', {}, L('selbst')),
+  add(root, h('h2', {}, '🗣️ ', L('selbst')),
     h('p', { class: 'note' }, T('selbst_hinweis')));
   const all = Object.values(S.anrufe);
   if (!all.length) { add(root, h('p', { class: 'muted small' }, 'Noch kein Anruf geübt.')); return; }
@@ -100,7 +100,7 @@ export function fortschrittView(root) {
       h('div', { class: 'small' }, `Letzte Einschätzung über ${all.length} geübte Gesprächszüge`),
       legend(SELBST.map(s => ({ label: `${s.label}: ${count(s.val)}`, color: s.color }))),
       stack(SELBST.map(s => ({ n: count(s.val), color: s.color, label: s.label })))),
-    h('h3', {}, 'Pro Anruf'),
+    h('h3', {}, '📞 Pro Anruf'),
     h('div', { class: 'card' }, C.anrufe.map(a => {
       const mine = a.turns.map((t, i) => (t.wer === 'ich' ? (S.anrufe[a.id + ':' + i] || null) : undefined)).filter(x => x !== undefined);
       const done = mine.filter(Boolean);

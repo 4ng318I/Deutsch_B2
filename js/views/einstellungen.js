@@ -27,7 +27,7 @@ export function einstellungenView(root) {
   });
 
   add(root, 
-    h('h1', {}, L('einstellungen')),
+    h('h1', {}, '⚙️ ', L('einstellungen')),
     h('div', { class: 'field' }, h('div', { class: 'lbl' }, L('spanisch')),
       seg('spanisch', [[2, 'Viel'], [1, 'Wenig'], [0, 'Keine']]),
       h('div', { class: 'muted small' }, T('spanisch_hinweis'))),

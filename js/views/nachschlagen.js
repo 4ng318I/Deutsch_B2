@@ -4,7 +4,7 @@ import { speakBtn } from '../speech.js';
 import { S } from '../store.js';
 import { L, T } from '../i18n.js';
 
-const TABS = [['wortschatz', 'wortschatz'], ['redemittel', 'redemittel'], ['grammatik', 'grammatik']];
+const TABS = [['wortschatz', 'wortschatz', '📖'], ['redemittel', 'redemittel', '💬'], ['grammatik', 'grammatik', '🧠']];
 const flag = e => (e.revisar ? h('span', { class: 'flag' }, 'prüfen lassen') : null);
 
 function wortschatz(box) {
@@ -27,7 +27,7 @@ function wortschatz(box) {
             w.pl && w.pl !== '-' ? h('span', { class: 'muted' }, ', Pl. ' + w.pl) : null,
             ' – ', w.es, ' ', flag(w)),
           h('div', { class: 'bsp' }, w.bsp),
-          h('div', {}, h('span', { class: 'tag' }, blockById(w.block).titel), h('span', { class: 'tag' }, w.abt))))));
+          h('div', {}, h('span', { class: 'tag c-' + w.block }, blockById(w.block).emoji + ' ' + blockById(w.block).titel), h('span', { class: 'tag' }, w.abt))))));
   }
   q.addEventListener('input', draw); selB.addEventListener('change', draw); selA.addEventListener('change', draw);
   add(box, h('div', { class: 'row' }, q, selB, selA), list);
@@ -40,7 +40,7 @@ function redemittel(box) {
   for (const f of C.index.funktionen) {
     const g = groups[f.id] || [];
     add(box, h('details', {},
-      h('summary', {}, `${f.titel} (${g.length})`, S.settings.spanisch === 2 ? h('span', { class: 'gl' }, f.es) : null),
+      h('summary', {}, `${f.emoji} ${f.titel} (${g.length})`, S.settings.spanisch === 2 ? h('span', { class: 'gl' }, f.es) : null),
       g.map(r => h('div', { class: 'entry' }, speakBtn(r.de.replace(/…/g, '')),
         h('div', {},
           h('div', { class: 'w' }, r.de, ' ', flag(r)),
@@ -71,9 +71,9 @@ export function nachschlagenView(root, arg) {
   const tab = RENDER[arg] ? arg : 'wortschatz';
   const box = h('div', {});
   add(root, 
-    h('h1', {}, L('nachschlagen')),
-    h('div', { class: 'tabs' }, TABS.map(([id, key]) =>
-      h('a', { class: 'btn' + (id === tab ? ' on' : ''), href: '#/nachschlagen/' + id }, T(key)))),
+    h('h1', {}, '📚 ', L('nachschlagen')),
+    h('div', { class: 'tabs' }, TABS.map(([id, key, emo]) =>
+      h('a', { class: 'btn' + (id === tab ? ' on' : ''), href: '#/nachschlagen/' + id }, emo + ' ' + T(key)))),
     box);
   RENDER[tab](box);
 }

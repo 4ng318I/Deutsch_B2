@@ -1,22 +1,97 @@
 {
   "version": "1.0",
   "bloecke": [
-    { "id": "anfrage", "titel": "Anfrage", "es": "Solicitudes y peticiones de oferta" },
-    { "id": "termin", "titel": "Termin", "es": "Citas: acordar, aplazar, confirmar" },
-    { "id": "reklamation", "titel": "Reklamation", "es": "Reclamaciones y plazos incumplidos" },
-    { "id": "stoerung", "titel": "Störung", "es": "Averías: avisar, describir, coordinar" },
-    { "id": "rechnung", "titel": "Rechnung", "es": "Facturas: revisar, discutir, autorizar" }
+    {
+      "id": "anfrage",
+      "titel": "Anfrage",
+      "es": "Solicitudes y peticiones de oferta",
+      "emoji": "📨"
+    },
+    {
+      "id": "termin",
+      "titel": "Termin",
+      "es": "Citas: acordar, aplazar, confirmar",
+      "emoji": "📅"
+    },
+    {
+      "id": "reklamation",
+      "titel": "Reklamation",
+      "es": "Reclamaciones y plazos incumplidos",
+      "emoji": "⚠️"
+    },
+    {
+      "id": "stoerung",
+      "titel": "Störung",
+      "es": "Averías: avisar, describir, coordinar",
+      "emoji": "⚡"
+    },
+    {
+      "id": "rechnung",
+      "titel": "Rechnung",
+      "es": "Facturas: revisar, discutir, autorizar",
+      "emoji": "🧾"
+    }
   ],
   "funktionen": [
-    { "id": "bitten", "titel": "Bitten und anfragen", "es": "Pedir" },
-    { "id": "reklamieren", "titel": "Reklamieren", "es": "Reclamar" },
-    { "id": "entschuldigen", "titel": "Sich entschuldigen", "es": "Disculparse" },
-    { "id": "ablehnen", "titel": "Ablehnen", "es": "Rechazar" },
-    { "id": "vorschlagen", "titel": "Vorschlagen", "es": "Proponer" },
-    { "id": "bestaetigen", "titel": "Bestätigen", "es": "Confirmar" },
-    { "id": "nachhaken", "titel": "Nachhaken", "es": "Insistir" },
-    { "id": "nachfragen", "titel": "Nachfragen und klären", "es": "Pedir aclaración" },
-    { "id": "schlechte_nachricht", "titel": "Schlechte Nachrichten überbringen", "es": "Dar malas noticias" },
-    { "id": "abschliessen", "titel": "Gespräch abschließen", "es": "Cerrar" }
+    {
+      "id": "bitten",
+      "titel": "Bitten und anfragen",
+      "es": "Pedir",
+      "emoji": "🙏"
+    },
+    {
+      "id": "reklamieren",
+      "titel": "Reklamieren",
+      "es": "Reclamar",
+      "emoji": "😤"
+    },
+    {
+      "id": "entschuldigen",
+      "titel": "Sich entschuldigen",
+      "es": "Disculparse",
+      "emoji": "🙇"
+    },
+    {
+      "id": "ablehnen",
+      "titel": "Ablehnen",
+      "es": "Rechazar",
+      "emoji": "✋"
+    },
+    {
+      "id": "vorschlagen",
+      "titel": "Vorschlagen",
+      "es": "Proponer",
+      "emoji": "💡"
+    },
+    {
+      "id": "bestaetigen",
+      "titel": "Bestätigen",
+      "es": "Confirmar",
+      "emoji": "✅"
+    },
+    {
+      "id": "nachhaken",
+      "titel": "Nachhaken",
+      "es": "Insistir",
+      "emoji": "🔁"
+    },
+    {
+      "id": "nachfragen",
+      "titel": "Nachfragen und klären",
+      "es": "Pedir aclaración",
+      "emoji": "❓"
+    },
+    {
+      "id": "schlechte_nachricht",
+      "titel": "Schlechte Nachrichten überbringen",
+      "es": "Dar malas noticias",
+      "emoji": "📉"
+    },
+    {
+      "id": "abschliessen",
+      "titel": "Gespräch abschließen",
+      "es": "Cerrar",
+      "emoji": "👋"
+    }
   ]
 }

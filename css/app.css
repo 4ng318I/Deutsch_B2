@@ -117,8 +117,6 @@ details > summary { cursor: pointer; font-weight: 600; }
 .opts .btn.wrong { border-color: var(--crit); background: var(--crit-bg); }
 .fb { margin: 14px 0; }
 .fb .verdict { font-weight: 700; }
-.fb .verdict.ok::before { content: "✓ "; color: var(--good); }
-.fb .verdict.bad::before { content: "✗ "; color: var(--crit); }
 .fb .sol { display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 1.05rem; }
 .rule { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; margin: 8px 0; }
 .rule details { border: 0; padding: 2px 0; }
@@ -174,6 +172,55 @@ table.t th:first-child, table.t td:first-child { text-align: left; }
 
 .field { display: grid; gap: 6px; padding: 14px 0; border-top: 1px solid var(--line); }
 .field > label, .field > .lbl { font-weight: 600; }
+
+/* ---------- Farbe & Emojis ---------- */
+/* Jeder Block und jeder Übungstyp hat eine eigene Farbe (--c). */
+.c-anfrage     { --c: #4fa3f7; }
+.c-termin      { --c: #9085e9; }
+.c-reklamation { --c: #e66767; }
+.c-stoerung    { --c: #eda100; }
+.c-rechnung    { --c: #1baf7a; }
+.c-satzbau     { --c: var(--s1); }
+.c-konnektor   { --c: var(--s2); }
+.c-luecke      { --c: var(--s3); }
+.c-gemischt    { --c: #d55181; }
+.c-anruf       { --c: #9085e9; }
+
+.brand {
+  background: linear-gradient(90deg, #4fa3f7, #9085e9 55%, #d55181);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.card[class*="c-"] {
+  border-top: 3px solid var(--c);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 14%, var(--surface)) 0%, var(--surface) 70%);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+a.card[class*="c-"]:hover { transform: translateY(-2px); box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 25%, transparent); }
+[class*="c-"] .meter > i { background: var(--c); }
+.emo { font-size: 1.5rem; line-height: 1; margin-right: 8px; vertical-align: -2px; }
+.card .row .btn.primary { background: var(--c, var(--accent)); color: #0b0b0b; }
+.tag[class*="c-"] { background: color-mix(in srgb, var(--c) 22%, transparent); color: var(--ink); }
+.sess-head .tag { margin: 0; }
+.meter.prog > i { background: linear-gradient(90deg, #4fa3f7, #9085e9, #d55181); }
+
+/* Satzteile: gewählte Teile farbig, das Verb-Ende sichtbar */
+.answer .chunk { background: color-mix(in srgb, var(--c, var(--accent)) 20%, var(--surface-2)); border-color: color-mix(in srgb, var(--c, var(--accent)) 50%, transparent); }
+.bank .chunk:hover { border-color: var(--c, var(--accent)); }
+.gap { border-color: var(--c, var(--accent)); }
+.fb .verdict.ok::before { content: "✅ "; }
+.fb .verdict.bad::before { content: "❌ "; }
+.fb .verdict { font-size: 1.1rem; }
+.result-emo { font-size: 3.5rem; line-height: 1; margin: 8px 0 0; }
+
+/* Anrufe */
+.turn { border-color: var(--c, var(--accent)); }
+.rate .btn.r2 { border-color: var(--good); background: var(--good-bg); }
+.rate .btn.r1 { border-color: var(--warn); background: rgba(250,178,25,.12); }
+.rate .btn.r0 { border-color: var(--crit); background: var(--crit-bg); }
+.bubble.p { border-left: 3px solid var(--c, var(--accent)); }
+
+/* Fortschritt */
+.tile[class*="c-"] .big { color: var(--c); }
 
 @media (max-width: 520px) {
   body { font-size: 16px; }
