@@ -1,0 +1,2 @@
+# Hooks müssen LF behalten, sonst scheitert sh an ""
+.githooks/* text eol=lf
