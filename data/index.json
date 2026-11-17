@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "bloecke": [
+    { "id": "anfrage", "titel": "Anfrage", "es": "Solicitudes y peticiones de oferta" },
+    { "id": "termin", "titel": "Termin", "es": "Citas: acordar, aplazar, confirmar" },
+    { "id": "reklamation", "titel": "Reklamation", "es": "Reclamaciones y plazos incumplidos" },
+    { "id": "stoerung", "titel": "Störung", "es": "Averías: avisar, describir, coordinar" },
+    { "id": "rechnung", "titel": "Rechnung", "es": "Facturas: revisar, discutir, autorizar" }
+  ],
+  "funktionen": [
+    { "id": "bitten", "titel": "Bitten und anfragen", "es": "Pedir" },
+    { "id": "reklamieren", "titel": "Reklamieren", "es": "Reclamar" },
+    { "id": "entschuldigen", "titel": "Sich entschuldigen", "es": "Disculparse" },
+    { "id": "ablehnen", "titel": "Ablehnen", "es": "Rechazar" },
+    { "id": "vorschlagen", "titel": "Vorschlagen", "es": "Proponer" },
+    { "id": "bestaetigen", "titel": "Bestätigen", "es": "Confirmar" },
+    { "id": "nachhaken", "titel": "Nachhaken", "es": "Insistir" },
+    { "id": "nachfragen", "titel": "Nachfragen und klären", "es": "Pedir aclaración" },
+    { "id": "schlechte_nachricht", "titel": "Schlechte Nachrichten überbringen", "es": "Dar malas noticias" },
+    { "id": "abschliessen", "titel": "Gespräch abschließen", "es": "Cerrar" }
+  ]
+}
