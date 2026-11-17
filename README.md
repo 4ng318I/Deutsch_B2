@@ -208,10 +208,12 @@ HTML, CSS y JavaScript sin framework ni paso de build. Los datos están en `data
 del código.
 
 ```
-python -m http.server     # servir en local → http://localhost:8000
-python tools/validate.py  # coherencia del banco de datos
-python tools/e2e.py       # prueba completa en Chromium (Playwright)
-python tools/screenshots.py  # regenera las capturas de docs/img/
+git config core.hooksPath .githooks   # una vez por clon: activa el hook de pre-commit
+python -m http.server                 # servir en local → http://localhost:8000
+python tools/validate.py              # banco de datos + control de VERSION
+python tools/test_check_version.py    # prueba del control de VERSION y del hook
+python tools/e2e.py                   # prueba completa en Chromium (Playwright)
+python tools/screenshots.py           # regenera las capturas de docs/img/
 ```
 
 `tools/e2e.py` comprueba:
@@ -277,3 +279,21 @@ Para cambiar el formato en una v2:
 1. Sube `VERSION` en [sw.js](sw.js). Si añades archivos, inclúyelos en `ASSETS`;
    `tools/validate.py` comprueba que no falte ninguno.
 2. Pasa `validate.py` y `e2e.py`, y haz push a `main`. GitHub Pages publica en uno o dos minutos.
+
+#### Control automático de `VERSION`
+
+No hace falta acordarse de subir `VERSION`: [tools/check_version.py](tools/check_version.py)
+lo comprueba solo. Funciona así:
+
+- **Qué cuenta como «servido»**: los archivos de `ASSETS` en `sw.js` más el propio `sw.js`
+  (cambiar solo la línea de `VERSION` no cuenta). README, `docs/` y `tools/` no exigen subir la
+  versión.
+- **Contra qué compara**: con lo último publicado, `origin/main`, no con el commit anterior. Así,
+  una versión que ocupe varios commits solo necesita subir `VERSION` una vez antes del push.
+- **Saltos de línea**: se ignoran las diferencias LF/CRLF de Windows.
+- **Dónde falla**:
+  - **Hook de pre-commit** ([.githooks/pre-commit](.githooks/pre-commit)): rechaza el commit y dice
+    qué archivos cambiaron y a qué número subir `VERSION`. Revisa solo lo que está preparado para
+    el commit (staged).
+  - **`tools/validate.py`**: revisa el directorio de trabajo, por si el hook no está activado.
+- **Repo sin `origin/main`** (un clon recién creado sin remoto): la comprobación se salta con un aviso.

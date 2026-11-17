@@ -152,6 +152,15 @@ for rel in cached:
     if not (ROOT / rel).exists():
         errors.append(f"sw.js: {rel} existiert nicht")
 
+sys.path.insert(0, str(ROOT / "tools"))
+from check_version import check as check_version  # noqa: E402
+
+v_ok, v_msg = check_version(ROOT)
+if not v_ok:
+    errors.append(v_msg)
+else:
+    print("Version:", v_msg)
+
 print(f"Sätze: {count['saetze']}  →  Satzbau {count['satzbau']}, Konnektor {count['konnektor']}, Lückentext {count['luecke']}")
 print(f"Wortschatz: {len(wort)}   Redemittel: {len(rede)}   Regeln: {len(gram)}")
 print(f"Anrufe: {len(anrufe)} mit {zuege} eigenen Gesprächszügen")
