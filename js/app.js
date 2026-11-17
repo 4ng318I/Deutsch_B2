@@ -1,6 +1,6 @@
 import { h } from './dom.js';
 import { loadContent } from './content.js';
-import { S } from './store.js';
+import { S, status } from './store.js';
 import { T } from './i18n.js';
 import { stopSpeaking } from './speech.js';
 import { startView } from './views/start.js';
@@ -37,8 +37,49 @@ function route() {
   window.scrollTo(0, 0);
 }
 
+// Hinweis, wenn der gespeicherte Fortschritt nicht gelesen werden konnte.
+// Er wird dann nicht überschrieben; eine Kopie liegt unter "deutschb2:backup-gesperrt".
+function storeNotice() {
+  if (status.state !== 'zukunft' && status.state !== 'defekt') return;
+  const box = document.getElementById('notice');
+  box.hidden = false;
+  box.replaceChildren(h('div', { class: 'note' }, '⚠️ ', status.msg,
+    ' Dein gespeicherter Fortschritt bleibt unverändert; bis dahin wird nichts gespeichert.'));
+}
+
+// „Neue Version verfügbar“: erscheint, wenn ein neuer Service Worker installiert ist
+// und wartet. Erst der Knopf aktiviert ihn und lädt die Seite neu.
+function updateToast(worker) {
+  if (document.querySelector('.toast')) return;
+  const t = h('div', { class: 'toast', role: 'status' },
+    h('span', {}, '✨ Neue Version verfügbar'),
+    h('button', { class: 'btn primary', onclick: () => { reloadWanted = true; worker.postMessage('SKIP_WAITING'); } }, 'Neu laden'),
+    h('button', { class: 'icon', 'aria-label': 'Später', title: 'Später', onclick: () => t.remove() }, '×'));
+  document.body.append(t);
+}
+let reloadWanted = false;
+
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('sw.js');
+    if (reg.waiting && navigator.serviceWorker.controller) updateToast(reg.waiting);
+    reg.addEventListener('updatefound', () => {
+      const w = reg.installing;
+      w && w.addEventListener('statechange', () => {
+        if (w.state === 'installed' && navigator.serviceWorker.controller) updateToast(w);
+      });
+    });
+    // Nur neu laden, wenn der Nutzer es wollte (beim ersten Besuch übernimmt der Worker sonst auch die Kontrolle).
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (reloadWanted) { reloadWanted = false; location.reload(); } });
+    // Installierte App bleibt oft lange offen: beim Zurückkehren nach Updates schauen.
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update().catch(() => {}); });
+  } catch { /* ohne Service Worker läuft die App trotzdem, nur nicht offline */ }
+}
+
 async function main() {
   document.documentElement.dataset.theme = S.settings.theme;
+  storeNotice();
   try {
     await loadContent();
   } catch (e) {
@@ -49,8 +90,6 @@ async function main() {
   route();
 }
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
-}
+window.addEventListener('load', registerSW);
 
 main();

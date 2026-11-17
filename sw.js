@@ -1,6 +1,15 @@
 // Service Worker: alles vorab cachen (offline ab dem ersten Besuch),
 // danach "stale-while-revalidate": sofort aus dem Cache, im Hintergrund aktualisieren.
-const CACHE = 'satzbau-b2-v1';
+//
+// Bei jeder Veröffentlichung VERSION erhöhen: Dann installiert der Browser den neuen
+// Worker, die App zeigt „Neue Version verfügbar“ und lädt erst auf Knopfdruck neu.
+//
+// Der Ursprung (4ng318i.github.io) wird von allen Pages-Projekten geteilt. Deshalb
+// trägt der Cache ein eigenes Präfix und es werden NUR eigene Caches gelöscht.
+const PREFIX = 'deutschb2-';
+const VERSION = 2;
+const CACHE = PREFIX + 'v' + VERSION;
+const LEGACY_CACHES = ['satzbau-b2-v1']; // Name aus der ersten Veröffentlichung
 const ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'icons/icon-192.png', 'icons/icon-512.png',
@@ -16,14 +25,23 @@ const ASSETS = [
   'data/saetze-stoerung.json', 'data/saetze-rechnung.json'
 ];
 
+// Kein skipWaiting bei der Installation: Eine neue Version wartet, bis die App
+// sie per Nachricht aktiviert (Knopf „Neu laden“). Beim allerersten Besuch gibt es
+// keinen alten Worker, dann wird der neue ohnehin sofort aktiv.
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' umgeht den HTTP-Cache, damit wirklich die neuen Dateien geladen werden
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))));
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
+  const mine = k => (k.startsWith(PREFIX) || LEGACY_CACHES.includes(k)) && k !== CACHE;
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(mine).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
